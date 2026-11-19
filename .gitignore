@@ -1,0 +1,19 @@
+# AWS credentials
+.aws/
+*.pem
+*.key
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Local configuration
+kubeconfig
+config
