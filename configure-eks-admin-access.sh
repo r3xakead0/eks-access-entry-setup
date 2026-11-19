@@ -2,13 +2,23 @@
 
 set -euo pipefail
 
-# Usage: ./configure-eks-admin-access.sh <cluster-name>
+# Usage: ./configure-eks-admin-access.sh <cluster-name> <namespace> [namespace...]
 
-CLUSTER_NAME="${1:?Usage: $0 <cluster-name>}"
+if (( $# < 2 )); then
+  echo "Usage: $0 <cluster-name> <namespace> [namespace...]"
+  exit 2
+fi
+
+CLUSTER_NAME="$1"
+shift
+NAMESPACES=("$@")
+printf -v NAMESPACE_LIST '%s,' "${NAMESPACES[@]}"
+NAMESPACE_LIST="${NAMESPACE_LIST%,}"
 REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-west-2}}"
 
 echo "Cluster: $CLUSTER_NAME"
 echo "Region: $REGION"
+echo "Namespaces: $NAMESPACE_LIST"
 
 # Get current SSO role name
 PRINCIPAL_NAME=$(aws sts get-caller-identity \
@@ -44,12 +54,12 @@ else
     --region "$REGION"
 fi
 
-# Step 2: Associate administrator policy
+# Step 2: Associate administrator policy only with the requested namespaces
 aws eks associate-access-policy \
   --cluster-name "$CLUSTER_NAME" \
   --principal-arn "$ROLE_ARN" \
   --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy \
-  --access-scope type=cluster \
+  --access-scope "type=namespace,namespaces=${NAMESPACE_LIST}" \
   --region "$REGION"
 
 # Step 3: Verify access policy
@@ -63,4 +73,4 @@ aws eks update-kubeconfig \
   --name "$CLUSTER_NAME" \
   --region "$REGION"
 
-echo "EKS administrator access configured successfully!"
+echo "EKS namespace administrator access configured successfully!"
