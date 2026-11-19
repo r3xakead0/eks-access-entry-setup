@@ -1,15 +1,16 @@
 # EKS Access Entry Setup
 
-A simple Bash script to configure Amazon EKS Access Entries and grant cluster administrator permissions to the currently authenticated AWS IAM Identity Center (SSO) role.
+Bash scripts to configure Amazon EKS Access Entries for the currently authenticated AWS IAM Identity Center (SSO) role. Use the view script for read-only access or the admin script for administrative access.
 
 ## Features
 
 - Automatically detects the currently authenticated AWS SSO role.
 - Retrieves the corresponding IAM Role ARN.
 - Creates an EKS Access Entry.
-- Associates the AmazonEKSClusterAdminPolicy.
+- Associates either `AmazonEKSViewPolicy` or `AmazonEKSAdminPolicy`.
 - Verifies the associated access policy.
 - Updates the local kubeconfig.
+- Reuses an existing access entry when one is already configured.
 
 ## Prerequisites
 
@@ -21,10 +22,10 @@ A simple Bash script to configure Amazon EKS Access Entries and grant cluster ad
 
 ## Usage
 
-Make the script executable:
+Make both scripts executable:
 
 ```bash
-chmod +x configure-eks-admin-access.sh
+chmod +x configure-eks-view-access.sh configure-eks-admin-access.sh
 ```
 
 Configure your AWS profile and region:
@@ -34,7 +35,13 @@ export AWS_PROFILE=your-aws-profile
 export AWS_REGION=us-west-2
 ```
 
-Run the script:
+Grant read-only access:
+
+```bash
+./configure-eks-view-access.sh your-eks-cluster
+```
+
+Grant administrative access:
 
 ```bash
 ./configure-eks-admin-access.sh your-eks-cluster
@@ -42,11 +49,15 @@ Run the script:
 
 ## Permissions
 
-This script associates:
+The view script associates:
 
-`arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy`
+`arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy`
 
-**Warning:** This grants full administrative access to the EKS cluster. Use only in environments where you are authorized to grant these permissions.
+The admin script associates:
+
+`arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy`
+
+**Warning:** The admin policy grants broad administrative access to Kubernetes resources. Unlike `AmazonEKSClusterAdminPolicy`, it does not grant every permission in the cluster. Use it only where you are authorized to grant these permissions.
 
 ## License
 

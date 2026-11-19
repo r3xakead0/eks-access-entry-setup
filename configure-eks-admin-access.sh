@@ -29,18 +29,26 @@ fi
 
 echo "Principal ARN: $ROLE_ARN"
 
-# Step 1: Create EKS Access Entry
-aws eks create-access-entry \
+# Step 1: Create EKS Access Entry when it does not already exist
+if aws eks describe-access-entry \
   --cluster-name "$CLUSTER_NAME" \
   --principal-arn "$ROLE_ARN" \
-  --type STANDARD \
-  --region "$REGION"
+  --region "$REGION" \
+  >/dev/null 2>&1; then
+  echo "Access entry already exists."
+else
+  aws eks create-access-entry \
+    --cluster-name "$CLUSTER_NAME" \
+    --principal-arn "$ROLE_ARN" \
+    --type STANDARD \
+    --region "$REGION"
+fi
 
 # Step 2: Associate administrator policy
 aws eks associate-access-policy \
   --cluster-name "$CLUSTER_NAME" \
   --principal-arn "$ROLE_ARN" \
-  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy \
   --access-scope type=cluster \
   --region "$REGION"
 
