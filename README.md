@@ -1,13 +1,13 @@
 # EKS Access Entry Setup
 
-Bash scripts to configure Amazon EKS Access Entries for the currently authenticated AWS IAM Identity Center (SSO) role. Use the view script for read-only access, the admin script for namespace-scoped administration, or the cluster-admin script for full cluster administration.
+Bash scripts to configure Amazon EKS Access Entries for the currently authenticated AWS IAM Identity Center (SSO) role. Use the view script for read-only access, the edit or admin scripts for namespace-scoped access, or the cluster-admin script for full cluster administration.
 
 ## Features
 
 - Automatically detects the currently authenticated AWS SSO role.
 - Retrieves the corresponding IAM Role ARN.
 - Creates an EKS Access Entry.
-- Associates `AmazonEKSViewPolicy`, `AmazonEKSAdminPolicy`, or `AmazonEKSClusterAdminPolicy`.
+- Associates `AmazonEKSViewPolicy`, `AmazonEKSEditPolicy`, `AmazonEKSAdminPolicy`, or `AmazonEKSClusterAdminPolicy`.
 - Verifies the associated access policy.
 - Updates the local kubeconfig.
 - Reuses an existing access entry when one is already configured.
@@ -26,6 +26,7 @@ Make the scripts executable:
 
 ```bash
 chmod +x configure-eks-view-access.sh \
+  configure-eks-edit-access.sh \
   configure-eks-admin-access.sh \
   configure-eks-cluster-admin-access.sh
 ```
@@ -41,6 +42,12 @@ Grant read-only access:
 
 ```bash
 ./configure-eks-view-access.sh your-eks-cluster
+```
+
+Grant edit access to one or more namespaces:
+
+```bash
+./configure-eks-edit-access.sh your-eks-cluster namespace-a namespace-b
 ```
 
 Grant administrative access to one or more namespaces:
@@ -60,6 +67,10 @@ Grant full cluster administrator access:
 The view script associates:
 
 `arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy`
+
+The edit script associates the following policy with only the namespaces passed as arguments:
+
+`arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy`
 
 The admin script associates the following policy with only the namespaces passed as arguments:
 
